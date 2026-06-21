@@ -168,7 +168,7 @@ int main()
 
     std::cout << "==================================================================" << std::endl;
     std::cout << "                    LEATHY™ 工作室 版权所有                          " << std::endl;
-    std::cout << "              PureWipe 纯净强力系统清理工具 v1.2.1 [稳定版]          " << std::endl;
+    std::cout << "              PureWipe 纯净强力系统清理工具 v1.2.2 [稳定版]          " << std::endl;
     std::cout << "==================================================================" << std::endl;
     std::cout << "运行机制：所有清理运算交由系统CPU独立执行，主程序极低内存占用" << std::endl;
     std::cout << "四大模块：基础临时垃圾 | 深度系统冗余 | 巨型文件空间释放 | 全量系统修复" << std::endl;
@@ -209,6 +209,7 @@ int main()
     std::cout << "\n==================== 第二阶段：深度系统冗余清理 ====================" << std::endl;
     RunSafeStep("终止资源管理器进程，准备清空缩略图缓存", "taskkill /f /im explorer.exe");
     RunDangerStep("图片视频缩略图缓存文件夹", "rd /s /q \"%localappdata%\\Microsoft\\Windows\\Explorer\"", "%localappdata%\\Microsoft\\Windows\\Explorer");
+    Sleep(500);
     RunSafeStep("重新启动资源管理器", "start explorer.exe");
     RunSafeStep("停止Windows更新服务", "net stop wuauserv");
     RunDangerStep("Windows更新下载安装包缓存", "rd /s /q \"%windir%\\SoftwareDistribution\\Download\"", "%windir%\\SoftwareDistribution\\Download");
