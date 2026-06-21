@@ -3,3 +3,5 @@
 *.log
 build/
 tmp/
+Release/*.exe
+*.exe
