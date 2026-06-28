@@ -1,4 +1,4 @@
-# PureWipe v1.2.1
+# PureWipe v1.2.2
 LEATHY™ Studio 出品 Windows 纯净强力系统清理工具
 
 ## 项目特点

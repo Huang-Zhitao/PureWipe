@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PureWipe - Windows系统深度清理工具</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,Arial}
+body{background:#12151c;color:#eee;min-width:1100px}
+header{position:sticky;top:0;width:100%;background:#1c2029;box-shadow:0 2px 10px #0003;z-index:999}
+.nav-wrap{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:0 30px;height:64px}
+.logo{font-size:22px;font-weight:bold;color:#38e38e}
+.nav-list{display:flex;gap:36px}
+.nav-list a{color:#ccc;text-decoration:none;font-size:15px;transition:0.25s}
+.nav-list a:hover{color:#38e38e}
+.main-container{max-width:1400px;margin:0 auto;padding:60px 30px}
+.hero{text-align:center;margin-bottom:80px}
+.hero h1{font-size:48px;margin-bottom:16px;background:linear-gradient(90deg,#38e38e,#24b8ff);-webkit-background-clip:text;color:transparent}
+.hero p{font-size:18px;color:#aaa;max-width:700px;margin:0 auto}
+.download-box{background:#1e232d;border-radius:16px;padding:40px;margin:60px 0;text-align:center}
+.download-main{position:relative;display:inline-block}
+.btn-x64{padding:14px 42px;background:#28c777;border:none;color:#000;font-size:17px;border-radius:10px;cursor:pointer;transition:0.2s;font-weight:600}
+.btn-x64:hover{transform:translateY(-3px);box-shadow:0 6px 20px #28c77744}
+.drop-toggle{width:44px;height:44px;background:#2d333f;border:none;color:#fff;border-radius:0 10px 10px 0;cursor:pointer;vertical-align:middle;margin-left:-4px;transition:0.2s}
+.drop-menu{position:absolute;top:100%;left:0;width:100%;background:#2d333f;border-radius:0 0 10px 10px;overflow:hidden;height:0;transition:height 0.3s ease;overflow:hidden}
+.drop-menu a{display:block;padding:12px;color:#eee;text-decoration:none}
+.drop-menu a:hover{background:#38404f}
+.func-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin:60px 0}
+.func-card{background:#1e232d;padding:26px;border-radius:12px;transition:0.25s}
+.func-card:hover{transform:translateY(-6px);box-shadow:0 8px 24px #0004}
+.func-card h3{color:#38e38e;margin-bottom:10px}
+.guide-wrap{margin:80px 0}
+.guide-wrap h2{font-size:30px;margin-bottom:30px;border-left:5px solid #38e38e;padding-left:12px}
+.step-list{display:flex;gap:24px}
+.step-item{flex:1;background:#1e232d;padding:24px;border-radius:12px}
+.step-num{width:32px;height:32px;background:#38e38e;color:#000;display:grid;place-items:center;border-radius:50%;font-weight:bold;margin-bottom:12px}
+.faq-wrap{margin:80px 0}
+.faq-wrap h2{font-size:30px;margin-bottom:30px;border-left:5px solid #38e38e;padding-left:12px}
+.faq-item{background:#1e232d;margin-bottom:12px;border-radius:10px;overflow:hidden}
+.faq-q{padding:18px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.faq-a{height:0;overflow:hidden;padding:0 24px;transition:0.3s}
+.faq-a.show{padding:0 24px 18px;height:auto}
+footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;margin-top:100px}
+.fade{opacity:0;transform:translateY(20px);transition:0.6s ease}
+.fade.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<header>
+<div class="nav-wrap">
+<div class="logo">PureWipe</div>
+<div class="nav-list">
+<a href="#home">首页</a>
+<a href="#function">核心功能</a>
+<a href="#download">下载</a>
+<a href="#guide">使用教程</a>
+<a href="#faq">常见问题</a>
+</div>
+</div>
+</header>
+<div class="main-container">
+<section id="home" class="hero fade">
+<h1>PureWipe - Windows系统深度清理神器</h1>
+<p>纯C++轻量化单文件工具，全自动系统垃圾清理、系统修复，无广告无捆绑，完全免费开放使用，支持x86/x64双架构（ARM64架构不支持）</p>
+</section>
+<section id="function" class="fade">
+<h2 style="font-size:30px;margin-bottom:30px;border-left:5px solid #38e38e;padding-left:12px">核心功能</h2>
+<div class="func-grid">
+<div class="func-card">
+<h3>四层深度清理</h3>
+<p>临时文件、浏览器缓存、更新残留、旧系统备份一键清除（有些需要进行二次确认，您可以选择清理或不清理）</p>
+</div>
+<div class="func-card">
+<h3>系统自动修复</h3>
+<p>SFC/DISM镜像修复(有一点点久)、网络重置(释放IP,重新获取IP）、磁盘错误自检修复（需要重启哦）</p>
+</div>
+<div class="func-card">
+<h3>极小体积</h3>
+<p>x64(64位)仅78KB，x86(32位)仅65KB，无需安装，单exe直接运行</p>
+</div>
+<div class="func-card">
+<h3>权限自动提权</h3>
+<p>检测管理员权限，无权限自动重启程序获取权限</p>
+</div>
+<div class="func-card">
+<h3>高危操作确认</h3>
+<p>运行高危操作（比如说清除WINDOWS.old)前弹窗二次确认，防止误删</p>
+</div>
+<div class="func-card">
+<h3>中文控制台适配</h3>
+<p>自动切换UTF8编码，解决命令行中文乱码问题</p>
+</div>
+<div class="func-card">
+<h3>大型冗余文件清理</h3>
+<p>自动清理大型冗余文件：比如说过期驱动等等，来释放大量磁盘空间</p>
+</div>
+<div class="func-card">
+<h3>全Windows兼容</h3>
+<p>Win10/Win11全版本通用，支持32位/64位设备（预览版也可以使用哦）</p>
+</div>
+</div>
+</section>
+<section id="download" class="download-box fade">
+<h2 style="font-size:32px;margin-bottom:20px">立即下载 PureWipe</h2>
+<p style="color:#aaa;margin-bottom:32px">主按钮直接下载x64 64位版本，点击右侧箭头展开下载x86 32位</p>
+<div class="download-main">
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.2.2/PureWipe_x64.exe">
+    <button class="btn-x64">直接下载 x64 64位版本 完整版</button>
+</a>
+<button class="drop-toggle" id="dropBtn">▼</button>
+<div class="drop-menu" id="dropMenu">
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.2.2/PureWipe_x86.exe">下载 x86 32位版本 完整版</a>
+</div>
+</section>
+<section id="guide" class="guide-wrap fade">
+<h2>详细使用方法</h2>
+<div class="step-list">
+<div class="step-item">
+<div class="step-num">1</div>
+<h3>下载程序</h3>
+<p>根据你的系统位数，下载对应x64(64位)/x86(32位)可执行文件</p>
+</div>
+<div class="step-item">
+<div class="step-num">2</div>
+<h3>直接运行</h3>
+<p>双击exe启动，程序会自动检测管理员权限，权限不足自动重启提权</p>
+</div>
+<div class="step-item">
+<div class="step-num">3</div>
+<h3>等待自动扫描清理</h3>
+<p>工具自动执行四层垃圾清理流程，全程无需手动操作</p>
+</div>
+<div class="step-item">
+<div class="step-num">4</div>
+<h3>完成系统修复</h3>
+<p>清理结束自动执行系统镜像恢复（但其实是修复要下载系统映像进行修复，您的系统）、网络（会释放您的IP，更新你的DNS和IP）、磁盘修复（这个功能需要重启），优化系统运行速度</p>
+</div>
+</div>
+</section>
+<section id="faq" class="faq-wrap fade">
+<h2>常见问题</h2>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>PureWipe 是纯免费软件吗？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+是的，完全永久免费，不存在付费解锁功能、弹窗广告、捆绑第三方软件，全部功能无限制开放。
+</div>
+</div>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>运行软件需要安装吗？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+不需要安装，单文件exe绿色程序，下载后双击即可直接使用，不会写入注册表冗余文件。
+</div>
+</div>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>清理文件会不会误删个人重要资料？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+不会，程序仅针对系统缓存、临时垃圾、更新残留文件进行清理，不会读取、删除你的文档、照片、安装软件等私人数据。
+</div>
+</div>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>支持ARM64架构Windows设备吗？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+当前仅提供x86（32位）、x64（64位）双版本，ARM64架构不支持（程序需要使用32位运行库）。
+</div>
+</div>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>为什么程序会被杀毒软件拦截呢？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+能是我们给大家带来的最大的困扰，我们团队暂时没有为程序上这个数字签名，所以有可能会被杀毒软件拦截，但是我们定不会在里面掺杂病毒，请不要在别的网站下载，认准我们！
+</div>
+</div>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>为什么会那么久？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+因为清理加修复，修复占的时间比较长，清理的话，如果你有很久没清了的话也会偏长一点，我们这边实测SSD差不多40分钟能清完， HDD可能需要1~1.5小时左右。
+</div>
+</div>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>那我要怎么更新到最新版本的程序呢？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+因为我们的程序不联网，程序上不能直接更新，你可以到我们的官网自己下载最新版本。
+</div>
+</div>
+</section>
+</div>
+<footer>
+PureWipe © 2026 轻量系统清理工具 | 纯C++开发 绿色无捆绑 | LEATHY™ 
+</footer>
+<script>
+const dropBtn = document.getElementById('dropBtn');
+const dropMenu = document.getElementById('dropMenu');
+let dropOpen = false;
+dropBtn.addEventListener('click',()=>{
+dropOpen = !dropOpen;
+dropMenu.style.height = dropOpen ? '52px' : '0px';
+dropBtn.innerText = dropOpen ? '▲' : '▼';
+})
+function toggleFaq(el){
+let ans = el.nextElementSibling;
+let symbol = el.querySelector('span:last-child');
+ans.classList.toggle('show');
+symbol.innerText = ans.classList.contains('show') ? '-' : '+';
+}
+const fadeElements = document.querySelectorAll('.fade');
+function checkScroll(){
+fadeElements.forEach(item=>{
+let top = item.getBoundingClientRect().top;
+if(top < window.innerHeight - 80){
+item.classList.add('show');
+}
+})
+}
+window.addEventListener('scroll',checkScroll);
+window.addEventListener('load',checkScroll);
+</script>
+</body>
+</html>
+​
