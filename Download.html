@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PureWipe - Windows系统深度清理工具</title>
+<title>PureWipe - Windows系统深度清理工具 v1.3.0</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,Arial}
 body{background:#12151c;color:#eee;min-width:1100px}
@@ -40,6 +40,10 @@ header{position:sticky;top:0;width:100%;background:#1c2029;box-shadow:0 2px 10px
 .faq-q{padding:18px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
 .faq-a{height:0;overflow:hidden;padding:0 24px;transition:0.3s}
 .faq-a.show{padding:0 24px 18px;height:auto}
+.update-log{background:#181c24;padding:24px;border-radius:12px;margin:40px 0}
+.update-log h3{color:#38e38e;margin-bottom:16px}
+.warn-enterprise{background:#422222;padding:20px;border-radius:10px;border:1px solid #ff6666;margin:30px 0}
+.warn-enterprise h3{color:#ff7777;margin-bottom:10px}
 footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;margin-top:100px}
 .fade{opacity:0;transform:translateY(20px);transition:0.6s ease}
 .fade.show{opacity:1;transform:translateY(0)}
@@ -48,35 +52,50 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 <body>
 <header>
 <div class="nav-wrap">
-<div class="logo">PureWipe</div>
+<div class="logo">PureWipe v1.3.0</div>
 <div class="nav-list">
 <a href="#home">首页</a>
 <a href="#function">核心功能</a>
 <a href="#download">下载</a>
 <a href="#guide">使用教程</a>
 <a href="#faq">常见问题</a>
+<a href="#update">更新日志</a>
 </div>
 </div>
 </header>
 <div class="main-container">
 <section id="home" class="hero fade">
-<h1>PureWipe - Windows系统深度清理神器</h1>
+<h1>PureWipe - Windows系统深度清理神器 v1.3.0</h1>
 <p>纯C++轻量化单文件工具，全自动系统垃圾清理、系统修复，无广告无捆绑，完全免费开放使用，支持x86/x64双架构（ARM64架构不支持）</p>
 </section>
+
+<div class="warn-enterprise">
+<h3>⚠️ 企业办公设备重要警示</h3>
+<p>本工具网络重置功能为次级风险操作，静态IP、AD域、财务工控、服务器主机执行IP重置会清空内网配置，导致全部业务断网，工具内提供独立确认弹窗，企业环境建议直接跳过网络模块。</p>
+</div>
+
 <section id="function" class="fade">
 <h2 style="font-size:30px;margin-bottom:30px;border-left:5px solid #38e38e;padding-left:12px">核心功能</h2>
 <div class="func-grid">
 <div class="func-card">
 <h3>四层深度清理</h3>
-<p>临时文件、浏览器缓存、更新残留、旧系统备份一键清除（有些需要进行二次确认，您可以选择清理或不清理）</p>
+<p>临时文件、浏览器缓存、更新残留、旧系统备份一键清除（高危项二次确认）</p>
+</div>
+<div class="func-card">
+<h3>实时控制台进度条</h3>
+<p>全清理流程可视化进度展示，清晰查看当前执行步骤与完成百分比</p>
+</div>
+<div class="func-card">
+<h3>分级风险控制</h3>
+<p>安全操作/次级网络风险/高危文件删除三级区分，企业主机网络操作单独弹窗拦截</p>
 </div>
 <div class="func-card">
 <h3>系统自动修复</h3>
-<p>SFC/DISM镜像修复(有一点点久)、网络重置(释放IP,重新获取IP）、磁盘错误自检修复（需要重启哦）</p>
+<p>SFC/DISM镜像修复、网络重置(可选)、磁盘错误自检修复（需要重启）</p>
 </div>
 <div class="func-card">
 <h3>极小体积</h3>
-<p>x64(64位)仅78KB，x86(32位)仅65KB，无需安装，单exe直接运行</p>
+<p>x64(64位)仅82KB，x86(32位)仅71KB，无需安装，单exe直接运行</p>
 </div>
 <div class="func-card">
 <h3>权限自动提权</h3>
@@ -84,62 +103,70 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 </div>
 <div class="func-card">
 <h3>高危操作确认</h3>
-<p>运行高危操作（比如说清除WINDOWS.old)前弹窗二次确认，防止误删</p>
-</div>
-<div class="func-card">
-<h3>中文控制台适配</h3>
-<p>自动切换UTF8编码，解决命令行中文乱码问题</p>
-</div>
-<div class="func-card">
-<h3>大型冗余文件清理</h3>
-<p>自动清理大型冗余文件：比如说过期驱动等等，来释放大量磁盘空间</p>
+<p>删除Windows.old、回收站、还原点等永久删除项弹窗二次确认，防止误删</p>
 </div>
 <div class="func-card">
 <h3>全Windows兼容</h3>
-<p>Win10/Win11全版本通用，支持32位/64位设备（预览版也可以使用哦）[特别提醒：请记得安装DLL]</p>
+<p>Win10/Win11全版本通用，支持32位/64位设备（预览版可用，需配套DLL库）</p>
 </div>
 </div>
 </section>
+
 <section id="download" class="download-box fade">
-<h2 style="font-size:32px;margin-bottom:20px">立即下载 PureWipe</h2>
+<h2 style="font-size:32px;margin-bottom:20px">立即下载 PureWipe v1.3.0</h2>
 <p style="color:#aaa;margin-bottom:32px">主按钮直接下载x64 64位版本，点击右侧箭头展开下载x86 32位</p>
 <div class="download-main">
-<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.2.2/dll.zip">
-    <button class="btn-x64">下载DLL库</button>
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.3.0/dll.zip">
+    <button class="btn-x64">下载配套DLL库</button>
 </a>
-<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.2.2/PureWipe_x64.exe">
-    <button class="btn-x64">直接下载 x64 64位版本 完整版</button>
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.3.0/PureWipe_x64.exe">
+    <button class="btn-x64">直接下载 x64 64位 v1.3.0 完整版</button>
 </a>
 <button class="drop-toggle" id="dropBtn">▼</button>
 <div class="drop-menu" id="dropMenu">
-<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.2.2/PureWipe_x86.exe">下载 x86 32位版本 完整版</a>
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.3.0/PureWipe_x86.exe">下载 x86 32位 v1.3.0 完整版</a>
 </div>
 </section>
+
+<section id="update" class="update-log fade">
+<h3>v1.3.0 更新日志（修复v1.2.2全部严重Bug）</h3>
+<ul style="line-height:2;padding-left:20px;color:#ddd;">
+<li>修复：全盘递归删除C盘*.tmp误删软件业务临时文件高危漏洞</li>
+<li>移除：批量注册System32全部DLL导致程序长时间卡死、大量报错逻辑</li>
+<li>移除：自动清理Downloads目录exe/压缩包，防止误删用户安装备份</li>
+<li>新增：全局控制台文字进度条，所有清理步骤实时展示进度百分比</li>
+<li>新增：次级风险独立模块，网络重置单独弹窗，提示企业静态IP断网风险</li>
+<li>优化：风险分层逻辑，安全任务自动执行，网络/文件删除均需手动确认</li>
+<li>优化：控制台输出排版，步骤分隔清晰，操作状态一目了然</li>
+</ul>
+</section>
+
 <section id="guide" class="guide-wrap fade">
 <h2>详细使用方法</h2>
 <div class="step-list">
 <div class="step-item">
 <div class="step-num">1</div>
 <h3>下载程序</h3>
-<p>根据你的系统位数，下载对应x64(64位)/x86(32位)可执行文件[特别提醒：请记得安装DLL]</p>
+<p>根据你的系统位数下载v1.3.0对应exe，同步下载DLL库放到同目录</p>
 </div>
 <div class="step-item">
 <div class="step-num">2</div>
 <h3>直接运行</h3>
-<p>双击exe启动，程序会自动检测管理员权限，权限不足自动重启提权</p>
+<p>双击exe自动申请管理员权限，无权限自动重启提权</p>
 </div>
 <div class="step-item">
 <div class="step-num">3</div>
-<h3>等待自动扫描清理</h3>
-<p>工具自动执行四层垃圾清理流程，全程无需手动操作</p>
+<h3>查看进度条执行清理</h3>
+<p>控制台实时展示进度条，高危/网络次级操作弹出确认，按需选择跳过</p>
 </div>
 <div class="step-item">
 <div class="step-num">4</div>
 <h3>完成系统修复</h3>
-<p>清理结束自动执行系统镜像恢复（但其实是修复要下载系统映像进行修复，您的系统）、网络（会释放您的IP，更新你的DNS和IP）、磁盘修复（这个功能需要重启），优化系统运行速度</p>
+<p>清理结束自动执行镜像修复，企业设备可跳过网络重置避免内网失效</p>
 </div>
 </div>
 </section>
+
 <section id="faq" class="faq-wrap fade">
 <h2>常见问题</h2>
 <div class="faq-item">
@@ -158,6 +185,15 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 </div>
 <div class="faq-a">
 不需要安装，单文件exe绿色程序，下载后双击即可直接使用，不会写入注册表冗余文件。
+</div>
+</div>
+<div class="faq-item">
+<div class="faq-q" onclick="toggleFaq(this)">
+<span>企业静态IP电脑可以运行吗？</span>
+<span>+</span>
+</div>
+<div class="faq-a">
+可以正常运行，仅网络重置模块会弹窗警告，输入N跳过即可，不会改动内网IP、网关、域配置。
 </div>
 </div>
 <div class="faq-item">
@@ -184,31 +220,31 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 <span>+</span>
 </div>
 <div class="faq-a">
-能是我们给大家带来的最大的困扰，我们团队暂时没有为程序上这个数字签名，所以有可能会被杀毒软件拦截，但是我们定不会在里面掺杂病毒，请不要在别的网站下载，认准我们！
+暂时未添加数字签名，易被安全软件误报，仅在GitHub官方渠道下载，不要使用第三方修改版。
 </div>
 </div>
 <div class="faq-item">
 <div class="faq-q" onclick="toggleFaq(this)">
-<span>为什么会那么久？</span>
+<span>进度条卡住不动怎么办？</span>
 <span>+</span>
 </div>
 <div class="faq-a">
-因为清理加修复，修复占的时间比较长，清理的话，如果你有很久没清了的话也会偏长一点，我们这边实测SSD差不多40分钟能清完， HDD可能需要1~1.5小时左右。
+DISM/SFC磁盘修复本身耗时较长，属于正常现象，等待执行完毕；长时间无响应可关闭程序，不会损坏系统文件。
 </div>
 </div>
 <div class="faq-item">
 <div class="faq-q" onclick="toggleFaq(this)">
-<span>那我要怎么更新到最新版本的程序呢？\为什么我一运行程序就报错？</span>
+<span>运行报错缺少DLL？</span>
 <span>+</span>
 </div>
 <div class="faq-a">
-因为我们的程序不联网，程序上不能直接更新，你可以到我们的官网自己下载最新版本。\你可能没有安装dll，请安装或者将dll或exe文件放在同一目录下运行。
+将下载的dll.zip解压，所有dll文件与exe放在同一文件夹再启动。
 </div>
 </div>
 </section>
 </div>
 <footer>
-PureWipe © 2026 轻量系统清理工具 | 纯C++开发 绿色无捆绑 | LEATHY™ 
+PureWipe v1.3.0 © 2026 轻量系统清理工具 | 纯C++开发 绿色无捆绑 | LEATHY™ 
 </footer>
 <script>
 const dropBtn = document.getElementById('dropBtn');
@@ -239,4 +275,3 @@ window.addEventListener('load',checkScroll);
 </script>
 </body>
 </html>
-​

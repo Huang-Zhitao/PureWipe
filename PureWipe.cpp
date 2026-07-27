@@ -3,8 +3,6 @@
 #pragma comment(lib, "shell32.lib")
 #pragma comment(lib, "advapi32.lib")
 #pragma execution_character_set("utf-8")
-
-// 修复 REFIID 未定义，必须提前引入COM头
 #include <objbase.h>
 #include <windows.h>
 #include <shellapi.h>
@@ -13,8 +11,29 @@
 #include <iostream>
 #include <string>
 #include <cstdio>
+#include <iomanip>
 
-// 控制台UTF8设置
+// 全局进度条工具函数
+void ShowProgress(int current, int total, const char* taskName)
+{
+    system("cls");
+    float percent = (static_cast<float>(current) / total) * 100;
+    int barWidth = 40;
+    int filled = static_cast<int>(barWidth * current / total);
+
+    std::cout << "========================================================" << std::endl;
+    std::cout << "当前任务：" << taskName << std::endl;
+    std::cout << "进度：[";
+    for (int i = 0; i < barWidth; i++)
+    {
+        if (i < filled) std::cout << "#";
+        else std::cout << " ";
+    }
+    std::cout << "] " << std::fixed << std::setprecision(1) << percent << "%" << std::endl;
+    std::cout << "步骤 " << current << "/" << total << std::endl;
+    std::cout << "========================================================" << std::endl << std::endl;
+}
+
 void SetConsoleUTF8()
 {
     SetConsoleOutputCP(CP_UTF8);
@@ -22,46 +41,33 @@ void SetConsoleUTF8()
     std::ios::sync_with_stdio(false);
 }
 
-// 管理员权限检测：分离自定义枚举，杜绝类型转换冲突
 bool IsAdmin()
 {
-    // 自定义局部枚举值，不与系统原生TOKEN_INFORMATION_CLASS混用
     const DWORD TokenElevationIdx = 20;
-
     typedef struct _TOKEN_ELEVATION
     {
         DWORD TokenIsElevated;
     } TOKEN_ELEVATION, *PTOKEN_ELEVATION;
-
     BOOL bIsAdmin = FALSE;
     HANDLE hToken = NULL;
     do
     {
         if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
             break;
-
         TOKEN_ELEVATION elevation = { 0 };
         DWORD cbSize = sizeof(TOKEN_ELEVATION);
-        // 直接传数字DWORD，彻底规避枚举类型转换报错
         if (!GetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS)TokenElevationIdx, &elevation, cbSize, &cbSize))
             break;
-
         bIsAdmin = elevation.TokenIsElevated;
     } while (false);
-
-    if (hToken)
-    {
-        CloseHandle(hToken);
-    }
+    if (hToken) CloseHandle(hToken);
     return bIsAdmin;
 }
 
-// 提权重启（ANSI兼容，去除宽字符依赖）
 void RerunAsAdmin()
 {
     char szPath[MAX_PATH] = { 0 };
     GetModuleFileNameA(NULL, szPath, MAX_PATH);
-
     HINSTANCE hInst = ShellExecuteA(NULL, "runas", szPath, NULL, NULL, SW_SHOWNORMAL);
     if ((reinterpret_cast<ULONG_PTR>(hInst)) <= 32)
     {
@@ -69,7 +75,6 @@ void RerunAsAdmin()
     }
 }
 
-// 执行系统命令（标准system，废弃_wsystem）
 int ExecuteSystemCommand(const char* cmd)
 {
     if (!cmd || strlen(cmd) == 0) return -1;
@@ -81,38 +86,32 @@ int ExecuteSystemCommand(const char* cmd)
     return retCode;
 }
 
-// 删除重建目录
 void SafeRecreateDirectory(const char* dirPath)
 {
     if (!dirPath || strlen(dirPath) == 0) return;
-    std::string rdCmd = "rd /s /q \"" + std::string(dirPath) + "\"";
+    std::string rdCmd = "rd /s /q \"" + std::string(dirPath) + "\" 2>nul";
     ExecuteSystemCommand(rdCmd.c_str());
     std::string mdCmd = "md \"" + std::string(dirPath) + "\"";
     ExecuteSystemCommand(mdCmd.c_str());
 }
 
-// 安全步骤输出
-void RunSafeStep(const char* desc, const char* cmd)
+// 安全步骤（无确认自动执行）
+void RunSafeStep(int cur, int total, const char* desc, const char* cmd)
 {
-    std::cout << "\n========================================" << std::endl;
-    std::cout << "【正在处理】" << desc << std::endl;
-    std::cout << "执行指令：" << cmd << std::endl;
-    std::cout << "========================================" << std::endl;
-
+    ShowProgress(cur, total, desc);
+    std::cout << "【安全清理】执行指令：" << cmd << std::endl;
     int retCode = ExecuteSystemCommand(cmd);
-    std::cout << "\n【完成】" << desc << " 状态码：" << retCode << std::endl;
-    fflush(stdout);
-    fflush(stderr);
+    std::cout << "\n【完成】" << desc << " 返回码：" << retCode << "\n" << std::endl;
+    Sleep(300);
 }
 
-// 高危删除步骤
-void RunDangerStep(const char* desc, const char* cmd, const char* recreateDir = nullptr)
+// 高危删除步骤（文件永久删除，强制确认）
+void RunDangerStep(int cur, int total, const char* desc, const char* cmd, const char* recreateDir = nullptr)
 {
-    std::cout << "\n========================================" << std::endl;
+    ShowProgress(cur, total, desc);
     std::cout << "【⚠️ 高危删除操作】" << desc << std::endl;
     std::cout << "指令：" << cmd << std::endl;
-    std::cout << "该操作永久删除文件，无法恢复！确认执行(Y/y)，跳过(N/n)：";
-
+    std::cout << "文件删除无法恢复！确认执行(Y/y)，跳过(N/n)：";
     char ch = 'N';
     if (!(std::cin >> ch))
     {
@@ -120,44 +119,68 @@ void RunDangerStep(const char* desc, const char* cmd, const char* recreateDir = 
         std::cin.ignore(1024, '\n');
         ch = 'N';
     }
-
     if (ch == 'Y' || ch == 'y')
     {
         std::cout << "开始执行高危清理..." << std::endl;
         int retCode = ExecuteSystemCommand(cmd);
-        std::cout << "\n【完成】" << desc << " 状态码：" << retCode << std::endl;
+        std::cout << "\n【完成】" << desc << " 返回码：" << retCode << std::endl;
         if (recreateDir)
         {
             SafeRecreateDirectory(recreateDir);
-            std::cout << "【重建目录】" << recreateDir << " 完成" << std::endl;
+            std::cout << "重建目录：" << recreateDir << " 完成" << std::endl;
         }
     }
     else
     {
         std::cout << "已跳过本条高危清理。" << std::endl;
     }
-    std::cout << "========================================\n";
-    fflush(stdout);
-    fflush(stderr);
+    std::cout << std::endl;
+    Sleep(300);
 }
 
-// 程序收尾退出
+// 次级风险：网络重置（企业静态IP/域设备专用警告）
+void RunNetRiskStep(int cur, int total, const char* desc, const char* cmd)
+{
+    ShowProgress(cur, total, desc);
+    std::cout << "【⚠️ 次级风险 · 企业设备慎用】" << desc << std::endl;
+    std::cout << "指令：" << cmd << std::endl;
+    std::cout << "警告：静态IP/域控/财务工控机执行后会丢失内网配置、断业务！确认执行(Y/y)，跳过(N/n)：";
+    char ch = 'N';
+    if (!(std::cin >> ch))
+    {
+        std::cin.clear();
+        std::cin.ignore(1024, '\n');
+        ch = 'N';
+    }
+    if (ch == 'Y' || ch == 'y')
+    {
+        std::cout << "开始执行网络重置..." << std::endl;
+        int retCode = ExecuteSystemCommand(cmd);
+        std::cout << "\n【完成】" << desc << " 返回码：" << retCode << std::endl;
+    }
+    else
+    {
+        std::cout << "已跳过网络重置，保护企业内网配置" << std::endl;
+    }
+    std::cout << std::endl;
+    Sleep(300);
+}
+
 void CleanupAndDestroySelf()
 {
-    fflush(stdin);
-    fflush(stdout);
-    fflush(stderr);
-    std::cout << "\n按任意键退出程序..." << std::endl;
+    std::cout << "\n========================================" << std::endl;
+    std::cout << "✅ 全部清理&修复流程执行完毕" << std::endl;
+    std::cout << "提示：如需恢复休眠功能，管理员CMD执行 powercfg /hibernate on" << std::endl;
+    std::cout << "按任意键退出程序..." << std::endl;
+    std::cout << "========================================" << std::endl;
     _getch();
     FreeConsole();
     ExitProcess(0);
 }
 
-// 换回标准main，移除wmain，不再需要-municode参数
 int main()
 {
     SetConsoleUTF8();
-
     if (!IsAdmin())
     {
         std::cout << "未检测管理员权限，自动拉起管理员权限窗口运行..." << std::endl;
@@ -168,15 +191,20 @@ int main()
 
     std::cout << "==================================================================" << std::endl;
     std::cout << "                    LEATHY™ 工作室 版权所有                          " << std::endl;
-    std::cout << "              PureWipe 纯净强力系统清理工具 v1.2.2 [稳定版]          " << std::endl;
+    std::cout << "              PureWipe 纯净强力系统清理工具 v1.3.0 修复版          " << std::endl;
     std::cout << "==================================================================" << std::endl;
-    std::cout << "运行机制：所有清理运算交由系统CPU独立执行，主程序极低内存占用" << std::endl;
-    std::cout << "四大模块：基础临时垃圾 | 深度系统冗余 | 巨型文件空间释放 | 全量系统修复" << std::endl;
+    std::cout << "更新日志：" << std::endl;
+    std::cout << "1. 修复v1.2.2全盘递归删除*.tmp误删业务文件漏洞" << std::endl;
+    std::cout << "2. 移除批量注册全部System32 DLL卡死逻辑" << std::endl;
+    std::cout << "3. 移除自动清理Downloads安装包、压缩包风险逻辑" << std::endl;
+    std::cout << "4. 新增控制台实时进度条，全程可视化清理进度" << std::endl;
+    std::cout << "5. 网络重置独立次级风险确认，保护企业静态IP/域主机" << std::endl;
+    std::cout << "6. 分层风险：安全操作 / 网络次级风险 / 文件高危删除" << std::endl;
     std::cout << "==================================================================" << std::endl;
     std::cout << "⚠️ 全局风险说明：" << std::endl;
-    std::cout << "1. 工具使用 rd /s /q 强制删除，文件删除后无法恢复；" << std::endl;
-    std::cout << "2. 所有大容量删除高危项会单独确认，不同意则自动跳过；" << std::endl;
-    std::cout << "3. ResetBase极致清理执行后，将无法卸载已安装的历史Windows更新；" << std::endl;
+    std::cout << "1. rd /s /q 删除文件永久无法恢复；高危项全部手动确认" << std::endl;
+    std::cout << "2. ResetBase执行后无法卸载历史Windows更新" << std::endl;
+    std::cout << "3. 企业办公静态IP电脑强烈建议跳过全部网络重置步骤" << std::endl;
     std::cout << "==================================================================" << std::endl;
 
     char globalConfirm = 'N';
@@ -186,83 +214,67 @@ int main()
         std::cin.clear();
         std::cin.ignore(1024, '\n');
     }
-
     if (globalConfirm != 'Y' && globalConfirm != 'y')
     {
-        std::cout << "操作已取消，清空缓存销毁程序..." << std::endl;
+        std::cout << "操作已取消，程序退出..." << std::endl;
         CleanupAndDestroySelf();
     }
 
-    // 阶段1 基础临时垃圾清理
-    std::cout << "\n==================== 第一阶段：基础临时垃圾清理 ====================" << std::endl;
-    RunDangerStep(
-        "全盘tmp、备份、日志、崩溃转储、校验临时文件",
-        "del /f /s /q C:\\*.tmp C:\\*._mp C:\\*.log C:\\*.chk C:\\*.old C:\\*.bak C:\\*.syd C:\\*.dmp"
-    );
-    RunDangerStep("系统临时目录 C:\\Windows\\Temp", "rd /s /q \"%windir%\\temp\"", "%windir%\\temp");
-    RunDangerStep("用户本地临时文件夹 Local\\Temp", "rd /s /q \"%localappdata%\\Temp\"", "%localappdata%\\Temp");
-    RunDangerStep("低权限程序临时目录 LocalLow\\Temp", "rd /s /q \"%localappdata%\\LocalLow\\Temp\"", "%localappdata%\\LocalLow\\Temp");
-    RunSafeStep("系统预读加速缓存 Prefetch", "del /f /s /q \"%windir%\\prefetch\\*\"");
-    RunSafeStep("用户最近访问记录快捷方式", "del /f /s /q \"%userprofile%\\Recent\\*\"");
+    // 总步骤计数（所有任务总数）
+    const int TOTAL_STEP = 28;
+    int curStep = 0;
 
-    // 阶段2 深度系统缓存冗余清理
-    std::cout << "\n==================== 第二阶段：深度系统冗余清理 ====================" << std::endl;
-    RunSafeStep("终止资源管理器进程，准备清空缩略图缓存", "taskkill /f /im explorer.exe");
-    RunDangerStep("图片视频缩略图缓存文件夹", "rd /s /q \"%localappdata%\\Microsoft\\Windows\\Explorer\"", "%localappdata%\\Microsoft\\Windows\\Explorer");
+    // ========== 阶段1：基础临时垃圾清理 ==========
+    std::cout << "\n===== 第一阶段：基础临时垃圾清理 =====" << std::endl;
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "系统临时目录 Windows\\Temp", "rd /s /q \"%windir%\\temp\"", "%windir%\\temp");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "用户临时目录 Local\\Temp", "rd /s /q \"%localappdata%\\Temp\"", "%localappdata%\\Temp");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "低权限临时目录 LocalLow\\Temp", "rd /s /q \"%localappdata%\\LocalLow\\Temp\"", "%localappdata%\\LocalLow\\Temp");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "系统预读缓存 Prefetch", "del /f /s /q \"%windir%\\prefetch\\*\"");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "用户最近访问记录", "del /f /s /q \"%userprofile%\\Recent\\*\"");
+
+    // ========== 阶段2：深度系统缓存冗余清理 ==========
+    std::cout << "\n===== 第二阶段：深度系统冗余清理 =====" << std::endl;
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "终止资源管理器", "taskkill /f /im explorer.exe");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "图片视频缩略图缓存", "rd /s /q \"%localappdata%\\Microsoft\\Windows\\Explorer\"", "%localappdata%\\Microsoft\\Windows\\Explorer");
     Sleep(500);
-    RunSafeStep("重新启动资源管理器", "start explorer.exe");
-    RunSafeStep("停止Windows更新服务", "net stop wuauserv");
-    RunDangerStep("Windows更新下载安装包缓存", "rd /s /q \"%windir%\\SoftwareDistribution\\Download\"", "%windir%\\SoftwareDistribution\\Download");
-    RunDangerStep("Windows更新数据库缓存", "rd /s /q \"%windir%\\SoftwareDistribution\\DataStore\"", "%windir%\\SoftwareDistribution\\DataStore");
-    RunSafeStep("重启Windows更新服务", "net start wuauserv");
-    RunDangerStep("系统蓝屏崩溃小型转储文件 Minidump", "rd /s /q \"%windir%\\Minidump\"", "%windir%\\Minidump");
-    RunDangerStep("微软应用商店缓存目录", "rd /s /q \"%localappdata%\\Microsoft\\Windows\\Store\\Cache\"", "%localappdata%\\Microsoft\\Windows\\Store\\Cache");
-    RunSafeStep("重置微软商店组件", "wsreset.exe");
-    RunDangerStep("Edge浏览器网页缓存", "rd /s /q \"%localappdata%\\Microsoft\\Edge\\User Data\\Cache\"", "%localappdata%\\Microsoft\\Edge\\User Data\\Cache");
-    RunDangerStep("Chrome谷歌浏览器网页缓存", "rd /s /q \"%localappdata%\\Google\\Chrome\\User Data\\Cache\"", "%localappdata%\\Google\\Chrome\\User Data\\Cache");
-    RunDangerStep("下载文件夹安装包、压缩包垃圾", "del /f /s /q \"%userprofile%\\Downloads\\*.exe\" \"%userprofile%\\Downloads\\*.zip\" \"%userprofile%\\Downloads\\*.rar\" \"%userprofile%\\Downloads\\*.7z\"");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "重启资源管理器", "start explorer.exe");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "停止Windows更新服务", "net stop wuauserv");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "更新下载缓存 SoftwareDistribution\\Download", "rd /s /q \"%windir%\\SoftwareDistribution\\Download\"", "%windir%\\SoftwareDistribution\\Download");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "更新数据库缓存 DataStore", "rd /s /q \"%windir%\\SoftwareDistribution\\DataStore\"", "%windir%\\SoftwareDistribution\\DataStore");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "重启Windows更新服务", "net start wuauserv");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "系统蓝屏转储 Minidump", "rd /s /q \"%windir%\\Minidump\"", "%windir%\\Minidump");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "微软商店缓存", "rd /s /q \"%localappdata%\\Microsoft\\Windows\\Store\\Cache\"", "%localappdata%\\Microsoft\\Windows\\Store\\Cache");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "重置微软商店", "wsreset.exe");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "Edge浏览器缓存", "rd /s /q \"%localappdata%\\Microsoft\\Edge\\User Data\\Cache\"", "%localappdata%\\Microsoft\\Edge\\User Data\\Cache");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "Chrome浏览器缓存", "rd /s /q \"%localappdata%\\Google\\Chrome\\User Data\\Cache\"", "%localappdata%\\Google\\Chrome\\User Data\\Cache");
 
-// ====================== 第三阶段：巨型文件强力清理 ======================
-std::cout << "\n==================== 第三阶段：巨型文件强力清理（释放最大空间） ====================" << std::endl;
-RunSafeStep("清理系统过期组件库 WinSxS（安全删除旧补丁、旧驱动备份）",
-    "dism /online /cleanup-image /startcomponentcleanup");
-RunSafeStep("深度清理WinSxS废弃更新备份",
-    "dism /online /cleanup-image /spsuperseded");
-RunSafeStep("分析组件存储冗余，给出清理建议",
-    "dism /online /cleanup-image /analyzecomponentstore");
+    // ========== 阶段3：巨型文件空间释放 ==========
+    std::cout << "\n===== 第三阶段：巨型文件强力清理 =====" << std::endl;
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "WinSxS旧组件清理", "dism /online /cleanup-image /startcomponentcleanup");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "深度清理废弃更新备份", "dism /online /cleanup-image /spsuperseded");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "分析组件存储冗余", "dism /online /cleanup-image /analyzecomponentstore");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "ResetBase重置组件基准（无法卸载历史更新）", "dism /online /cleanup-image /startcomponentcleanup /resetbase");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "删除旧系统备份 Windows.old", "rd /s /q C:\\Windows.old");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "关闭休眠释放内存空间", "powercfg /hibernate off");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "清空全盘回收站", "rd /s /q C:\\$Recycle.Bin");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "查询C盘剩余空间", "fsutil volume diskfree C:");
 
-// 保留ResetBase，设为高危确认项，新版系统会报错但不阻断流程
-RunDangerStep("【极致空间释放】重置组件基准ResetBase（执行后无法卸载历史更新）",
-    "dism /online /cleanup-image /startcomponentcleanup /resetbase");
+    // ========== 阶段4：系统修复（区分网络次级风险） ==========
+    std::cout << "\n===== 第四阶段：系统完整性修复 =====" << std::endl;
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "DISM 镜像轻度检测", "dism /Online /Cleanup-Image /CheckHealth");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "DISM 深度扫描镜像", "dism /Online /Cleanup-Image /ScanHealth");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "DISM 在线修复系统镜像", "dism /Online /Cleanup-Image /RestoreHealth");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "SFC校验修复系统文件", "sfc /scannow");
 
-RunDangerStep("删除系统升级旧系统备份 Windows.old（可释放10-35G）",
-    "rd /s /q C:\\Windows.old");
-RunSafeStep("关闭休眠功能，删除hiberfil.sys（释放和内存同等大小空间）",
-    "powercfg /hibernate off");
-RunDangerStep("全盘回收站所有文件强制清空",
-    "rd /s /q C:\\$Recycle.Bin");
-RunSafeStep("查询当前C盘剩余空间",
-    "fsutil volume diskfree C:");
-    // 阶段4 全套完整系统修复
-    std::cout << "\n==================== 第四阶段：全维度系统完整修复 ====================" << std::endl;
-    RunSafeStep("DISM：检测系统镜像轻微损坏", "dism /Online /Cleanup-Image /CheckHealth");
-    RunSafeStep("DISM：全盘深度扫描系统镜像完整性", "dism /Online /Cleanup-Image /ScanHealth");
-    RunSafeStep("DISM：在线下载修复损坏系统镜像", "dism /Online /Cleanup-Image /RestoreHealth");
-    RunSafeStep("SFC：校验并修复全部系统核心文件", "sfc /scannow");
-    RunSafeStep("重置Windows网络套接字Winsock，修复网络异常", "netsh winsock reset");
-    RunSafeStep("重置IP、DNS网络配置", "netsh int ip reset");
-    RunSafeStep("刷新DNS缓存", "ipconfig /flushdns");
-    RunSafeStep("重置Windows更新服务修复异常", "net stop wuauserv && net start wuauserv");
-    RunSafeStep("磁盘自动校验修复文件系统错误", "chkdsk C: /f /offlinescanandfix");
-    RunSafeStep("清理老旧系统还原点释放空间", "vssadmin delete shadows /for=C: /oldest /quiet");
-    RunSafeStep("批量重新注册系统DLL组件，修复各类弹窗报错", "for %i in (%windir%\\system32\\*.dll) do regsvr32 /s %i");
-    RunSafeStep("清理DISM在线修复残留下载缓存","net stop wuauserv && rd /s /q \"%windir%\\SoftwareDistribution\\Download\" && net start wuauserv");
+    // 网络重置：次级风险独立确认
+    std::cout << "\n===== 网络修复模块（企业设备慎选） =====" << std::endl;
+    curStep++; RunNetRiskStep(curStep, TOTAL_STEP, "重置Winsock网络套接字", "netsh winsock reset");
+    curStep++; RunNetRiskStep(curStep, TOTAL_STEP, "重置IP栈（清空静态IP/网关/DNS）", "netsh int ip reset");
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "刷新本地DNS缓存", "ipconfig /flushdns");
 
-    std::cout << "\n======================================================================" << std::endl;
-    std::cout << "✅ 全部清理&修复流程执行完毕，即将清空程序内存并销毁进程" << std::endl;
-    std::cout << "LEATHY™ 工作室 版权所有" << std::endl;
-    std::cout << "提示：如需恢复休眠功能，管理员CMD执行 powercfg /hibernate on" << std::endl;
-    std::cout << "======================================================================" << std::endl;
+    // 收尾磁盘与更新修复
+    curStep++; RunSafeStep(curStep, TOTAL_STEP, "磁盘离线文件系统修复", "chkdsk C: /f /offlinescanandfix");
+    curStep++; RunDangerStep(curStep, TOTAL_STEP, "清理老旧系统还原点", "vssadmin delete shadows /for=C: /oldest /quiet");
 
     CleanupAndDestroySelf();
     return 0;
