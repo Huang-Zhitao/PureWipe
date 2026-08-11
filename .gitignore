@@ -3,6 +3,7 @@
 *.log
 build/
 tmp/
+Release/*.
 Release/*.exe
 *.exe
 .vscode/
