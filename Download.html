@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PureWipe - Windows系统深度清理工具 v1.3.0</title>
+<title>PureWipe - Windows系统深度清理工具 v2.4.1</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,Arial}
 body{background:#12151c;color:#eee;min-width:1100px}
@@ -52,7 +52,7 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 <body>
 <header>
 <div class="nav-wrap">
-<div class="logo">PureWipe v1.3.0</div>
+<div class="logo">PureWipe v2.4.1</div>
 <div class="nav-list">
 <a href="#home">首页</a>
 <a href="#function">核心功能</a>
@@ -65,7 +65,7 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 </header>
 <div class="main-container">
 <section id="home" class="hero fade">
-<h1>PureWipe - Windows系统深度清理神器 v1.3.0</h1>
+<h1>PureWipe - Windows系统深度清理神器 v2.4.1</h1>
 <p>纯C++轻量化单文件工具，全自动系统垃圾清理、系统修复，无广告无捆绑，完全免费开放使用，支持x86/x64双架构（ARM64架构不支持）</p>
 </section>
 
@@ -83,7 +83,7 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 </div>
 <div class="func-card">
 <h3>实时控制台进度条</h3>
-<p>全清理流程可视化进度展示，清晰查看当前执行步骤与完成百分比</p>
+<p>全清理流程可视化进度展示，清晰查看当前执行步骤</p>
 </div>
 <div class="func-card">
 <h3>分级风险控制</h3>
@@ -95,7 +95,7 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 </div>
 <div class="func-card">
 <h3>极小体积</h3>
-<p>x64(64位)仅82KB，x86(32位)仅71KB，无需安装，单exe直接运行</p>
+<p>x64(64位)仅1.21MB，x86(32位)仅1.31MB，无需安装，单exe直接运行</p>
 </div>
 <div class="func-card">
 <h3>权限自动提权</h3>
@@ -113,31 +113,25 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 </section>
 
 <section id="download" class="download-box fade">
-<h2 style="font-size:32px;margin-bottom:20px">立即下载 PureWipe v1.3.0</h2>
+<h2 style="font-size:32px;margin-bottom:20px">立即下载 PureWipe v2.4.1</h2>
 <p style="color:#aaa;margin-bottom:32px">主按钮直接下载x64 64位版本，点击右侧箭头展开下载x86 32位</p>
 <div class="download-main">
-<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.3.0/dll.zip">
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v2.4.1/dll.zip">
     <button class="btn-x64">下载配套DLL库</button>
 </a>
-<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.3.0/PureWipe_x64.exe">
-    <button class="btn-x64">直接下载 x64 64位 v1.3.0 完整版</button>
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v2.4.1/PureWipe_x64.exe">
+    <button class="btn-x64">直接下载 x64 64位 v2.4.1 完整版</button>
 </a>
 <button class="drop-toggle" id="dropBtn">▼</button>
 <div class="drop-menu" id="dropMenu">
-<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v1.3.0/PureWipe_x86.exe">下载 x86 32位 v1.3.0 完整版</a>
+<a href="https://github.com/huang-zhitao/PureWipe/releases/download/v2.4.1/PureWipe_x86.exe">下载 x86 32位 v2.4.1 完整版</a>
 </div>
 </section>
 
 <section id="update" class="update-log fade">
-<h3>v1.3.0 更新日志（修复v1.2.2全部严重Bug）</h3>
+<h3>v2.4.1 更新日志</h3>
 <ul style="line-height:2;padding-left:20px;color:#ddd;">
-<li>修复：全盘递归删除C盘*.tmp误删软件业务临时文件高危漏洞</li>
-<li>移除：批量注册System32全部DLL导致程序长时间卡死、大量报错逻辑</li>
-<li>移除：自动清理Downloads目录exe/压缩包，防止误删用户安装备份</li>
-<li>新增：全局控制台文字进度条，所有清理步骤实时展示进度百分比</li>
-<li>新增：次级风险独立模块，网络重置单独弹窗，提示企业静态IP断网风险</li>
-<li>优化：风险分层逻辑，安全任务自动执行，网络/文件删除均需手动确认</li>
-<li>优化：控制台输出排版，步骤分隔清晰，操作状态一目了然</li>
+<li>新增GUI</li>
 </ul>
 </section>
 
@@ -147,7 +141,7 @@ footer{width:100%;background:#1c2029;padding:30px;text-align:center;color:#888;m
 <div class="step-item">
 <div class="step-num">1</div>
 <h3>下载程序</h3>
-<p>根据你的系统位数下载v1.3.0对应exe，同步下载DLL库放到同目录</p>
+<p>根据你的系统位数下载v2.4.1对应exe，同步下载DLL库放到同目录</p>
 </div>
 <div class="step-item">
 <div class="step-num">2</div>
@@ -244,7 +238,7 @@ DISM/SFC磁盘修复本身耗时较长，属于正常现象，等待执行完毕
 </section>
 </div>
 <footer>
-PureWipe v1.3.0 © 2026 轻量系统清理工具 | 纯C++开发 绿色无捆绑 | LEATHY™ 
+PureWipe v2.4.1 © 2026 轻量系统清理工具 | 纯C++开发 绿色无捆绑 | LEATHY™ 
 </footer>
 <script>
 const dropBtn = document.getElementById('dropBtn');
